@@ -1,2 +1,2 @@
 print("Printing")
-input()
+raise Exception("TEST ERROR")
