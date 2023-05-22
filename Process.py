@@ -1,4 +1,8 @@
-import threading, subprocess
+import time
+from subprocess import Popen, PIPE, call
+import subprocess
+import threading
+import logging
 
 
 class Process:
@@ -12,18 +16,37 @@ class Process:
         self.uid = uid
         self.log_path = str()
         self.error_path = str()
-        self.status = "Running"
-        self.proc: subprocess
+        self.error_notification: bool = True
+        self.status: str = "Running"
+        self.thr = threading.Thread(target=self.__start_proc).start()
 
-    def start(self) -> threading.Thread:
-        try:
-            thr = threading.Thread(target=subprocess.run, args=[self.path])
+    def on_log(self, string: str = ""):
+        print(string, flush=True)
 
-        except Exception as e:
-            print(e)
-        else:
-            self.status = "Running"
-            return thr
+    def on_error(self, string: str = ""):
+        print(string, flush=True)
+
+    def __start_proc(self) -> subprocess:
+        process = subprocess.Popen(
+            self.exec_path,
+            stdout=subprocess.PIPE,
+            shell=True,
+            encoding='cp866',
+            errors='replace')
+        self.status = "running"
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                self.status = "stopped"
+                break
+            if output:
+                self.on_log(output)
+        print(self)
 
     def __repr__(self):
-        return f"{self.name} with {self.uid} is {self.status}"
+        return f"{self.name} with {self.uid} uid is {self.status}"
+
+
+if __name__ == "__main__":
+    ping_proc = Process(name="Ping proc",
+                        exec_path="ping 10.10.1.1")
