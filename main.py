@@ -1,50 +1,30 @@
-import os
-import asyncio
-import subprocess
-import threading
+import platform
 import dotenv
-import select
+import os
+from Process import Process
 
 dotenv.load_dotenv()
 
-# API_TOKEN: str = os.getenv('BOT_TOKEN')
-# ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
+API_TOKEN: str = os.getenv('BOT_TOKEN')
+ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
 
 
-# def main() -> list[threading.Thread]:
-#     w = threading.Thread(target=subprocess.run, args=["python.exe wait.py"])
-#     t = threading.Thread(target=subprocess.run, args=["python.exe print.py"])
-#     return [w, t]
-#
-#
-# if __name__ == "__main__":
-#     [thr.start() for thr in main()]
+def __parse_workers_folder() -> list[str]:
+    return list(os.listdir("./Workers/"))
 
 
-import asyncio
-import subprocess
+if __name__ == "__main__":
+    for string in __parse_workers_folder():
+        print(string)
+    if platform.system() == "Windows":
+        python_executor = r"venv/Scripts/python.exe"
+    else:
+        python_executor = r"venv/bin/python3.11"
+    exec_path = os.path.abspath('')
+    print(f"{exec_path = }")
+    worker = Process(name="TelegramPastaPosterBot",
+                     exec_path=exec_path + "/Workers/TelegramPastaBot/",
+                     python_executor=python_executor)
+    worker.start()
 
-process = subprocess.Popen(
-    'ping 10.10.0.1',
-    stdout=subprocess.PIPE,
-    stderr=subprocess.STDOUT,
-    shell=True,
-    encoding='cp866',
-    errors='replace'
-)
-
-while True:
-    realtime_output = process.stdout.readline()
-
-    if realtime_output == '' and process.poll() is not None:
-        break
-
-    if realtime_output:
-        print(realtime_output.strip(), flush=True)
-
-""" В этом примере мы создаем асинхронную функцию `run_command`,
-    которая запускает процесс подобно методу `run()` с использованием модуля `subprocess`.
-    Затем мы используем `communicate()` для чтения данных со стандартных потоков вывода и ошибок.
-    Если в результате работы процесса возникнет ошибка, то значение `code` будет отлично от нуля,
-    и мы можем обработать ошибку соответствующим образом.
-"""
+    print("Я ТУТ")
