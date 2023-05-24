@@ -81,13 +81,16 @@ class Process:
         self.start()
 
     def __start_proc(self):
-
-        ex = self.exec_path + self.python_executor + " " + self.exec_path+self.main_py_file
-        print(ex)
-        return os.system(ex)
+        return subprocess.Popen(f"{self.exec_path + self.python_executor} {self.exec_path + self.main_py_file}",
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                cwd=f"{self.exec_path}",
+                                shell=True,
+                                encoding=self.enc,
+                                # env={"PYTHONPATH": f"{self.exec_path}"},
+                                errors='replace')
 
     def update(self):
-        self.stop()
         updater = subprocess.Popen(f"git pull",
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
