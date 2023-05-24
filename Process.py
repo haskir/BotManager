@@ -126,7 +126,7 @@ class Process:
                 ...
         [self.on_error(error) for error in self.__process.stderr.readlines() if error]
 
-    def __repr__(self):
+    def __str__(self):
         return f"{self.name} with {self.uid} uid is {self.status}"
 
 
