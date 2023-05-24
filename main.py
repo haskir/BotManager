@@ -1,11 +1,13 @@
 import platform
+import time
+
 import dotenv
 import os
 from Process import Process
 
 dotenv.load_dotenv()
 
-API_TOKEN: str = os.getenv('BOT_TOKEN')
+API_TOKEN: str = os.getenv('BOT_MANAGER')
 ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
 
 
@@ -22,9 +24,10 @@ if __name__ == "__main__":
         python_executor = r"venv/bin/python3.11"
     exec_path = os.path.abspath('')
     print(f"{exec_path = }")
-    worker = Process(name="TelegramPastaPosterBot",
-                     exec_path=exec_path + "/Workers/TelegramPastaBot/",
-                     python_executor=python_executor)
-    worker.start()
-
-    print("Я ТУТ")
+    processes = {"TelegramPastaPosterBot": Process(name="TelegramPastaPosterBot",
+                                                   exec_path=exec_path + "/Workers/TelegramPastaBot/",
+                                                   python_executor=python_executor),
+                 "TelegramWalletBot": Process(name="TelegramWalletBot",
+                                              exec_path=exec_path + "/Workers/TGbotWallet/",
+                                              python_executor=python_executor)}
+    {process.start() for process in processes.values()}

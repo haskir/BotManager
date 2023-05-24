@@ -81,17 +81,19 @@ class Process:
         self.start()
 
     def __start_proc(self):
-        return subprocess.Popen(f"{self.exec_path + self.python_executor} {self.exec_path + self.main_py_file}",
+        ex = f"{self.exec_path + self.python_executor} {self.exec_path + self.main_py_file}"
+        print(ex)
+        return subprocess.Popen(ex,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 cwd=f"{self.exec_path}",
                                 shell=True,
                                 encoding=self.enc,
-                                # env={"PYTHONPATH": f"{self.exec_path}"},
                                 errors='replace')
 
     def update(self):
-        updater = subprocess.Popen(f"git pull",
+        self.stop()
+        updater = subprocess.Popen(f"git pull {self.exec_path}",
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    cwd=f"{self.exec_path}",
@@ -106,6 +108,10 @@ class Process:
             if realtime_output:
                 self._log.info(realtime_output.strip())
         [self.on_error(error) for error in updater.stderr.readlines() if error]
+        while updater.wait():
+            time.sleep(0.5)
+
+
 
     def __logging(self):
         while not self.__stop:
