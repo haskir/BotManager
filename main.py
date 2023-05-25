@@ -12,7 +12,7 @@ from Process import Process
 from Keyboards import *
 
 dotenv.load_dotenv()
-BOT_MANAGER: str = os.getenv('BotManager_token')
+BOT_MANAGER: str = os.getenv('BOT_MANAGER')
 ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
 
 
@@ -56,12 +56,11 @@ async def action_with_selected_process(callback: CallbackQuery):
     process, action = callback.data.split("$")
     try:
         temp = getattr(processes[process], action)
-        # print(temp, type(temp))
         await callback.message.answer(
             text=temp()
         )
-    except Exception as ke:
-        ...
+    except Exception as e:
+        print(e)
 
 
 @dp.message()
