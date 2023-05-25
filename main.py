@@ -9,10 +9,10 @@ from aiogram.types import CallbackQuery, Message
 import dotenv
 import os
 from Process import Process
+from Keyboards import *
 
 dotenv.load_dotenv()
-
-BOT_MANAGER: str = os.getenv('BOT_MANAGER')
+BOT_MANAGER: str = os.getenv('BotManager_token')
 ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
 
 
@@ -25,31 +25,63 @@ storage: MemoryStorage = MemoryStorage()
 dp: Dispatcher = Dispatcher(bot=bot, storage=storage)
 
 
-# @dp.message(Command(commands=['start_mailing']))
-# async def start_mailing(message: Message):
-#     if message.from_user.id != ADMIN_ID:
-#         await message.answer(text="Только админу разрешено.")
-#         return
-#     global mailing_enabled
-#     if mailing_enabled:
-#         await message.answer(text="Рассылка уже была включена ранее")
-#         return
-#     mailing_enabled = True
-#     await message.answer(text=f"Включил рассылку на {goal_time.time()}")
-#
-#
+@dp.message(lambda mes: mes.from_user.id != ADMIN_ID)
+async def not_admin(message: Message):
+    await message.answer(text="Тебе здесь не рады")
+
+
+@dp.callback_query(lambda call: call.from_user.id != ADMIN_ID)
+async def not_admin(message: Message):
+    await message.answer(text="Тебе здесь не рады")
+
+
 @dp.message(Command(commands=['show_running_processes']))
 async def show_running_processes(message: Message):
     if message.from_user.id != ADMIN_ID:
         print(f"Тут к тебе чел стучался {message.from_user.id}")
         await message.answer(text="Только админу разрешено.")
         return
-    await message.answer(text="\n".join([str(proc) for proc in processes.values()]),
+    await message.answer(text=f'Processes:',
                          reply_markup=keyboard_processes.as_markup())
+
+
+@dp.callback_query(lambda call: call.data in __parse_workers_folder())
+async def select_process(callback: CallbackQuery):
+    await callback.message.answer(text=f'{callback.data}',
+                                  reply_markup=keyboards[callback.data].as_markup())
+
+
+@dp.callback_query(lambda call: "$" in call.data)
+async def action_with_selected_process(callback: CallbackQuery):
+    process, action = callback.data.split("$")
+    try:
+        temp = getattr(processes[process], action)
+        # print(temp, type(temp))
+        await callback.message.answer(
+            text=temp()
+        )
+    except Exception as ke:
+        ...
+
 
 @dp.message()
 async def Any(message: Message):
     await message.answer(text="\n".join(processes.keys()))
+
+
+@dp.callback_query(lambda call: "back" in call.data)
+async def back(callback: CallbackQuery):
+    if callback.from_user.id != ADMIN_ID:
+        print(f"Тут к тебе чел стучался {callback.message.from_user.id}")
+        await callback.message.answer(text="Только админу разрешено.")
+        return
+    await callback.message.answer(text=f'Processes:',
+                                  reply_markup=keyboard_processes.as_markup())
+
+
+@dp.callback_query()
+async def Any(callback: CallbackQuery):
+    print(callback.data)
 
 
 async def main():
@@ -58,8 +90,6 @@ async def main():
 
 # Запускаем бота
 if __name__ == '__main__':
-    for string in __parse_workers_folder():
-        print(string)
     if platform.system() == "Windows":
         python_executor = r"venv/Scripts/python.exe"
     else:
@@ -69,18 +99,14 @@ if __name__ == '__main__':
     processes = {project: Process(name=project,
                                   exec_path=f"{exec_path}/Workers/{project}/",
                                   python_executor=f"{python_executor}")
-                  for project in __parse_workers_folder()}
-
-    from aiogram.utils.keyboard import (InlineKeyboardBuilder, InlineKeyboardButton)
-    # subscribe_button = InlineKeyboardButton(text="Подписаться", callback_data="Subscribe")
-    # unsubscribe_button = InlineKeyboardButton(text="Отписаться", callback_data="Unsubscribe")
-    # more_button = InlineKeyboardButton(text="Пасту хочу", callback_data="More")
+                 for project in __parse_workers_folder()}
 
     keyboard_processes = InlineKeyboardBuilder()
+
     keyboard_processes.add(*[InlineKeyboardButton(
         text=pr.name,
         callback_data=pr.name) for pr in processes.values()])
-    # {process.start() for process in processes.values()}
 
+    # {process.start() for process in processes.values()}
 
     asyncio.run(main())

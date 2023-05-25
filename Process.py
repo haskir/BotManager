@@ -31,7 +31,7 @@ class Process:
         if not uid:
             self.uid = self.LAST
             self.__class__.LAST += 1
-        self.status: str = "Stopped"
+        self.__status: str = "Stopped"
         self.__stop = True
         logger.add(self.log_path, level="INFO", rotation="100 MB",
                    filter=self.__make_filter(self.name, "INFO"))
@@ -64,21 +64,20 @@ class Process:
         self.__stop = False
         threading.Thread(target=self.__logging).start()
         self.__process = self.__start_proc()
-        self.status = "running"
+        self.__status = "running"
         self.on_start()
 
     def stop(self):
         if not self.__stop:
             self.__stop = True
             self.__process.kill()
-            self.status = "stopped"
+            self.__status = "stopped"
             self.on_stop()
         else:
             self._log.info("Already stopped")
 
-    def restart(self):
-        self.stop()
-        self.start()
+    def status(self):
+        return str(self)
 
     def __start_proc(self):
         ex = f"{self.exec_path + self.python_executor} {self.exec_path + self.main_py_file}"
@@ -87,13 +86,12 @@ class Process:
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 cwd=f"{self.exec_path}",
-                                shell=True,
                                 encoding=self.enc,
                                 errors='replace')
 
     def update(self):
         self.stop()
-        updater = subprocess.Popen(f"git pull {self.exec_path}",
+        updater = subprocess.Popen(f"git pull",
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    cwd=f"{self.exec_path}",
@@ -110,15 +108,14 @@ class Process:
         [self.on_error(error) for error in updater.stderr.readlines() if error]
         while updater.wait():
             time.sleep(0.5)
-
-
+        return self.log()
 
     def __logging(self):
         while not self.__stop:
             try:
                 output = self.__process.stdout.readline()
                 if output == '' and self.__process.poll() is not None:
-                    self.status = "stopped"
+                    self.__status = "stopped"
                     break
                 if output:
                     self.on_log(output)
@@ -127,7 +124,15 @@ class Process:
         [self.on_error(error) for error in self.__process.stderr.readlines() if error]
 
     def __str__(self):
-        return f"{self.name} with {self.uid} uid is {self.status}"
+        return f"{self.name} with {self.uid} uid is {self.__status}"
+
+    def log(self):
+        with open(self.log_path, "r") as file:
+            return "".join(file.readlines(0)[-6::]) or "EMPTY"
+
+    def error_log(self):
+        with open(self.error_path, "r") as file:
+            return "".join(file.readlines(0)[-15::]) or "EMPTY"
 
 
 if __name__ == "__main__":
