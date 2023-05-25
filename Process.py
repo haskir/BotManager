@@ -126,7 +126,7 @@ class Process:
         except AttributeError:
             ...
 
-    def __str__(self):
+    def __repr__(self):
         return f"{self.name} with {self.uid} uid is {self.__status}"
 
     def log(self):
