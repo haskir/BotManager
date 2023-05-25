@@ -121,7 +121,10 @@ class Process:
                     self.on_log(output)
             except AttributeError:
                 ...
-        [self.on_error(error) for error in self.__process.stderr.readlines() if error]
+        try:
+           [self.on_error(error) for error in self.__process.stderr.readlines() if error]
+        except AttributeError:
+            ...
 
     def __str__(self):
         return f"{self.name} with {self.uid} uid is {self.__status}"
