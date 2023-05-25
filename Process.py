@@ -54,7 +54,6 @@ class Process:
         if self.info_notification:
             ...
 
-    # Don't work
     def on_error(self, string: str = ""):
         self._log.error(string.rstrip("\n"))
         if self.error_notification:
@@ -66,6 +65,7 @@ class Process:
         self.__process = self.__start_proc()
         self.__status = "running"
         self.on_start()
+        return str(self)
 
     def stop(self):
         if not self.__stop:
@@ -80,8 +80,7 @@ class Process:
         return str(self)
 
     def __start_proc(self):
-        ex = f"{self.exec_path + self.python_executor} {self.exec_path + self.main_py_file}"
-        print(ex)
+        ex = [self.exec_path + self.python_executor, self.exec_path + self.main_py_file]
         return subprocess.Popen(ex,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
@@ -91,7 +90,7 @@ class Process:
 
     def update(self):
         self.stop()
-        updater = subprocess.Popen(f"git pull",
+        updater = subprocess.Popen(args=["git pull", self.exec_path],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    cwd=f"{self.exec_path}",
@@ -108,6 +107,7 @@ class Process:
         [self.on_error(error) for error in updater.stderr.readlines() if error]
         while updater.wait():
             time.sleep(0.5)
+        self.start()
         return self.log()
 
     def __logging(self):

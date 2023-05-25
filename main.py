@@ -37,11 +37,7 @@ async def not_admin(message: Message):
 
 @dp.message(Command(commands=['show_running_processes']))
 async def show_running_processes(message: Message):
-    if message.from_user.id != ADMIN_ID:
-        print(f"Тут к тебе чел стучался {message.from_user.id}")
-        await message.answer(text="Только админу разрешено.")
-        return
-    await message.answer(text=f'Processes:',
+    await message.answer(text='Processes:\n' + "\n".join(proc for proc in processes),
                          reply_markup=keyboard_processes.as_markup())
 
 
@@ -55,9 +51,9 @@ async def select_process(callback: CallbackQuery):
 async def action_with_selected_process(callback: CallbackQuery):
     process, action = callback.data.split("$")
     try:
-        temp = getattr(processes[process], action)
+        class_method = getattr(processes[process], action)
         await callback.message.answer(
-            text=temp()
+            text=class_method()
         )
     except Exception as e:
         print(e)
