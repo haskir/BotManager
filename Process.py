@@ -31,7 +31,7 @@ class Process:
         if not uid:
             self.uid = self.LAST
             self.__class__.LAST += 1
-        self.__status: str = "Stopped"
+        self.__status: str = "stopped"
         self.__stop = True
         logger.add(self.log_path, level="INFO", rotation="100 MB",
                    filter=self.__make_filter(self.name, "INFO"))
@@ -127,7 +127,7 @@ class Process:
             ...
 
     def __repr__(self):
-        return f"{self.name} with {self.uid} uid is {self.__status}"
+        return f"{self.name} is {self.__status}"
 
     def log(self):
         with open(self.log_path, "r") as file:
