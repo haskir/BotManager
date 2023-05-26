@@ -98,10 +98,11 @@ if __name__ == '__main__':
                  for project in __parse_workers_folder()}
 
     keyboard_processes = InlineKeyboardBuilder()
-
-    keyboard_processes.add(*[InlineKeyboardButton(
-        text=pr.name,
-        callback_data=pr.name) for pr in processes.values()])
+    for process in processes.values():
+        keyboard_processes.row(
+            InlineKeyboardButton(
+            text=process.name,
+            callback_data=process.name))
 
     # {process.start() for process in processes.values()}
 
