@@ -82,9 +82,7 @@ class Process:
         return f"{self.name} is {self.__status}"
 
     def __start_proc(self):
-        ex = self.exec_path
-        print(ex)
-        return subprocess.Popen(args=ex.split(" "),
+        return subprocess.Popen(args=[self.python_executor, self.main_py_file],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 cwd=f"{self.exec_path}",
