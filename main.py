@@ -101,8 +101,8 @@ if __name__ == '__main__':
     for process in processes.values():
         keyboard_processes.row(
             InlineKeyboardButton(
-            text=process.name,
-            callback_data=process.name))
+                text=process.name,
+                callback_data=process.name))
 
     # {process.start() for process in processes.values()}
 
