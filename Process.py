@@ -87,7 +87,7 @@ class Process:
         return subprocess.Popen(args=ex.split(" "),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                # cwd=f"{self.exec_path}",
+                                cwd=f"{self.exec_path}",
                                 encoding=self.enc,
                                 errors='replace')
 
