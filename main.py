@@ -39,7 +39,7 @@ async def not_admin(message: Message):
 
 @dp.message(Command(commands=['show_running_processes']))
 async def show_running_processes(message: Message):
-    text = 'Processes:\n' + "\n".join(str(proc) for proc in processes.values())
+    text = 'Processes:\n' + "\n".join(str(proc) for proc in processes.values() if proc.error_notification)
     await message.answer(text=text,
                          reply_markup=keyboard_processes.as_markup())
 

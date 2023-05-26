@@ -61,7 +61,7 @@ class Process:
             ...
 
     def start(self):
-        self.__stop = False
+        self.__stop, self.error_notification = False, True
         threading.Thread(target=self.__logging).start()
         self.__process = self.__start_proc()
         self.__status = "running"
@@ -78,7 +78,11 @@ class Process:
             self._log.info("Already stopped")
 
     def status(self):
-        self.__status = "running" if self.__process.poll() is None else "stopped"
+        if self.__process.poll() is None and self.error_notification:
+            self.__status = "running"
+        else:
+            self.__status = "stopped"
+            self.error_notification = False
         return f"{self.name} is {self.__status}"
 
     def __start_proc(self):
