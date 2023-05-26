@@ -20,7 +20,8 @@ class Process:
     def __init__(self, name: str = ".",
                  exec_path: str = r".",
                  main_py_file: str = r"main.py",
-                 python_executor: str = r"/venv/Scripts/python.exe",
+                 python_executor: str = r"/venv/Scripts/python.exe" if platform.system() == "Windows"
+                                                                    else r"venv/bin/python3.11",
                  uid: int = 0):
         self.name = name
         self.exec_path = exec_path
@@ -77,14 +78,16 @@ class Process:
             self._log.info("Already stopped")
 
     def status(self):
-        return str(self)
+        self.__status = "running" if self.__process.poll() is None else "stopped"
+        return f"{self.name} is {self.__status}"
 
     def __start_proc(self):
-        ex = [self.exec_path + self.python_executor, self.exec_path + self.main_py_file]
-        return subprocess.Popen(ex,
+        ex = self.exec_path
+        print(ex)
+        return subprocess.Popen(args=ex.split(" "),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-                                cwd=f"{self.exec_path}",
+                                # cwd=f"{self.exec_path}",
                                 encoding=self.enc,
                                 errors='replace')
 
@@ -139,13 +142,13 @@ class Process:
 
 
 if __name__ == "__main__":
-    n = 200
+    n = 20
     ping1 = Process(name="Ping1", exec_path=f"ping 1.1.1.1 -n {n}")
-    # ping1.start()
-
+    ping1.start()
     # ping2 = Process(name="Ping2", exec_path=f"piadng 10.10.0.1 -n {n}")
     # ping2.start()
-    ping1.update()
     time.sleep(4)
-    ping1.stop()
+    ping1.status()
+    time.sleep(20)
+    ping1.status()
     # ping2.stop()
