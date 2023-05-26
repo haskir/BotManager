@@ -90,7 +90,7 @@ async def stopped_checker():
 
 
 def on_startup():
-    scheduler.add_job(stopped_checker, "cron", minutes="*/15", jitter=120)
+    scheduler.add_job(stopped_checker, "cron", minute="*/15", jitter=120)
     scheduler.start()
 
 
