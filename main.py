@@ -10,7 +10,9 @@ import dotenv
 import os
 from Process import Process
 from Keyboards import *
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+scheduler = AsyncIOScheduler()
 dotenv.load_dotenv()
 BOT_MANAGER: str = os.getenv('BOT_MANAGER')
 ADMIN_ID: int = int(os.getenv('ADMIN_ID'))
@@ -80,8 +82,20 @@ async def Any(callback: CallbackQuery):
     print(callback.data)
 
 
+async def stopped_checker():
+    for proc in processes.values():
+        if "stopped" in str(proc):
+            await bot.send_message(text=proc.name,
+                                   chat_id=ADMIN_ID)
+
+
+def on_startup():
+    scheduler.add_job(stopped_checker, "cron", minutes="/15", jitter=120)
+    scheduler.start()
+
+
 async def main():
-    await dp.start_polling(bot, skip_updates=True)
+    await dp.start_polling(bot, skip_updates=True, on_startup=on_startup())
 
 
 # Запускаем бота
