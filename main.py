@@ -85,7 +85,7 @@ async def Any(callback: CallbackQuery):
 async def stopped_checker():
     for proc in processes.values():
         if "stopped" in str(proc):
-            await bot.send_message(text=proc.name,
+            await bot.send_message(text=proc.name + " is stopped",
                                    chat_id=ADMIN_ID)
 
 
