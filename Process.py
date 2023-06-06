@@ -95,7 +95,7 @@ class Process:
 
     def update(self):
         self.stop()
-        updater = subprocess.Popen(args=["git", "pull", self.exec_path],
+        updater = subprocess.Popen(args=["git", "pull"],
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE,
                                    cwd=f"{self.exec_path}",
